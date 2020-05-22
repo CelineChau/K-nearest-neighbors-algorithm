@@ -28,12 +28,13 @@ def readData(csv_data_set_path, csv_data_test_path = None) :
     #df1.columns = names
     data = df1.to_numpy()
     
-    if csv_data_test_path is None :
-        raw_set_number = round(df1.shape[0] * 0.8)
-        data_set = data[0:raw_set_number, 0:4]
-        data_test = data[raw_set_number:, 0:4]
-        sublabels = data[raw_set_number:, -1]
-        labels = data[0:raw_set_number, -1]
+    if csv_data_test_path == "preTest.csv" :
+        data_set = data[:, 0:4]
+        df2 = pd.read_csv(csv_data_test_path, header=None, sep=";") 
+        subdata = df2.to_numpy()
+        data_test = subdata[:, 0:4]
+        sublabels = subdata[: , -1]
+        labels = data[:, -1]
     else :
         data_set = data[:,0:4]
         df2 = pd.read_csv(csv_data_test_path, header=None, sep=";") 
@@ -55,7 +56,7 @@ def euclidean_distance(a, b) :
     return np.sqrt(np.sum((a - b)**2))
 
 # k-nearest algorithm
-def k_plus_proche(data_set, labels, X, K) :
+def k_nearest_neighbors(data_set, labels, X, K) :
     list_dist = []
     selected_labels = []
     
@@ -79,25 +80,33 @@ def k_plus_proche(data_set, labels, X, K) :
     # Return the mode of the K labels
     return most_frequent(selected_labels)
 
+
 def main() :
     # Load data
-    #percentage = 0
+    acc_list = []
+    data_set, data_test, labels, sublabels = readData("data.csv", "preTest.csv")
+    
+    for k in range(1, 30):
+        print("K", k)
+        percentage = 0
+        for i, x in enumerate(data_test) :
+            res = k_nearest_neighbors(data_set, labels, x, k)
+            if res == sublabels[i] :
+                percentage += 1
+        accuracy = percentage * 100 / len(data_test)
+        acc_list.append(accuracy) 
+        print("accuracy : ", accuracy)
+    
+    # Generate solution for finalTest
     data_set, data_test, labels, sublabels = readData("data.csv", "finalTest.csv")
-#    k = int(round(np.sqrt(len(data_set))))
-    k = 10
-    print("K", k)
-    
+    best_k = np.argmax(acc_list) + 1
+    print("best k : ", best_k)
     f = open("CHAU_NORMAND.txt", "w")
-    
     for i, x in enumerate(data_test) :
-        # Format noms et solution
-        res = k_plus_proche(data_set, labels, x, k)
-        # Ecriture dans un fichier
-#        if res == sublabels[i] :
-#            percentage += 1
+        res = k_nearest_neighbors(data_set, labels, x, best_k)
         f.write(res + "\n")
-        
     f.close()
+    
 
     
 
