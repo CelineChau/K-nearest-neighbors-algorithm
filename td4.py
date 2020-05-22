@@ -10,6 +10,8 @@ Created on Wed Apr 29 16:15:40 2020
 
 import numpy as np
 import pandas as pd
+from collections import Counter 
+import matplotlib.pyplot as plt
 
 # Apprentissage supervisé - k plus proches voisins
 
@@ -33,7 +35,7 @@ def readData(csv_data_set_path, csv_data_test_path = None) :
         df2 = pd.read_csv(csv_data_test_path, header=None, sep=";") 
         subdata = df2.to_numpy()
         data_test = subdata[:, 0:4]
-        sublabels = subdata[: , -1]
+        sublabels = subdata[:, -1]
         labels = data[:, -1]
     else :
         data_set = data[:,0:4]
@@ -49,7 +51,7 @@ def extract(lst):
 
 # Find most frequent element in a list
 def most_frequent(lst): 
-    return max(set(lst), key = lst.count) 
+    return Counter(lst).most_common(1)[0][0]
 
 # Euclidien distance
 def euclidean_distance(a, b) :
@@ -84,9 +86,10 @@ def k_nearest_neighbors(data_set, labels, X, K) :
 def main() :
     # Load data
     acc_list = []
+    nb_k = 15
     data_set, data_test, labels, sublabels = readData("data.csv", "preTest.csv")
     
-    for k in range(1, 30):
+    for k in range(1, nb_k):
         print("K", k)
         percentage = 0
         for i, x in enumerate(data_test) :
@@ -107,15 +110,14 @@ def main() :
         f.write(res + "\n")
     f.close()
     
+    plt.plot(np.arange(1, nb_k, 1), acc_list)
+    plt.plot(best_k, max(acc_list),'ro') 
+    plt.text(best_k, max(acc_list),'best k : ' + str(best_k))
+    plt.xlabel('K neighbors') 
+    plt.ylabel('Accuracy score') 
 
     
 
 if __name__ == "__main__":
     
     main()
-    
-
-
-
-
-
